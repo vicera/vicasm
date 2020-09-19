@@ -1,0 +1,19 @@
+TODO List
+
+- - Not done
+. - Work in ProgressTM
+x - Done
+/ - Kinda done
+? - Unplanned
+
+ - Parser
+   - Instruction commands
+   - Assembler-wide commands
+   - Labels and definitions
+ - Assembler
+   - Parsed commands to opcode
+   - .db
+   - .org
+   - .bin
+   - .include
+   - File linking
