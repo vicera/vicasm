@@ -1,17 +1,21 @@
 ; This is a test file
 ; Containing some random Assembly code.
-mov sp, 0xffef
-jp main		; More comments.
+halt
+NOP
+Nop
+nOp
+nop
 
-HelloWorld:
-	MOV		 a, B
-	mov A,	     C      
+push	hl
+pop		BC
+popa
+pushA
 
-	add    (hl)
-	   sub  (HL)
-	mov  (0xff0f),    a
-	ret
+Label:
+	add A
+	SUB B
+	and a, b, a
 
-main:
-	call HelloWorld
-	jp main
+	.define 0x12
+	.db 0x10, 10, 010, 0b10
+	.include "myfile.asm"

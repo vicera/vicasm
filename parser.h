@@ -51,11 +51,10 @@ typedef enum
     // Pointers
     NUM_POINTER,
     REG_POINTER,
-    LBL_POINTER,
+    DEF_POINTER,
 
     // Constants
     DEF_CONST,
-    LBL_CONST,
     NUM_CONST,
 
     // Other
@@ -94,7 +93,7 @@ class ASMArgument
 {
     public:
         // Init function
-        ASMArgument         (std::string a);
+        void                init(std::string a);
         // Raw string
         std::string         raw;
         // Argument type
@@ -115,6 +114,8 @@ class ASMCommand
         size_t              linenum;
         // Command type
         Commands            cmd;
+        // Number of arguments
+        size_t              arsize;
         // Arguments
         ASMArgument         *args;
 };
@@ -127,6 +128,8 @@ class ASMFile
         ASMFile             (std::string fn);
         // File name
         std::string         filename;
+        // Number of lines
+        size_t              lsize;
         // Array of parsed commands
         ASMCommand*         commands;
 };

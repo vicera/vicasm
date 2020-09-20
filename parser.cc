@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstddef>
+#include <cstring>
 
 #include <iostream>
 #include <algorithm>
@@ -17,7 +18,7 @@
 
 static void error(const char* message)
 {
-    printf("[xx] %s\n", message);
+    fprintf(stderr, "[xx] %s\n", message);
 }
 
 static void die(const char* message)
@@ -25,6 +26,14 @@ static void die(const char* message)
     error(message);
     perror(message);
 
+    exit(1);
+}
+
+static void ldie(const char* message, size_t line)
+{
+    if (line > 0)
+        fprintf(stderr, "[XX] Stop at line %ld\n", line);
+    error(message);
     exit(1);
 }
 
@@ -75,6 +84,17 @@ static inline size_t count_chars(std::string str, const char c)
     return std::count(str.begin(), str.end(), c);
 }
 
+// std::string -> bool
+// Checks if string is number.
+static bool is_number(const std::string str)
+{
+    std::string::const_iterator it = str.begin();
+    while (it != str.end() && std::isdigit(*it))
+        ++it;
+
+    return !str.empty() && it == str.end();
+}
+
 // std::string -> std::string
 // Trim spaces
 static inline std::string to_words(std::string a_str)
@@ -83,8 +103,9 @@ static inline std::string to_words(std::string a_str)
     std::string str = "";
 
     for (size_t i = 0; i < a_str.size(); ++i)
-        if ((IS_BLANK(a_str[i]) && !IS_BLANK(a_str[i+1]))
-            || !IS_BLANK(a_str[i]))
+        if (IS_BLANK(a_str[i]) && !IS_BLANK(a_str[i+1]))
+            str += ' ';
+        else if (!IS_BLANK(a_str[i]))
             str += a_str[i];
 
     return str;
@@ -209,12 +230,104 @@ Commands get_command(std::string a_str)
  *                      .argtype =  REG_POINTER
  *                      .content =  HL
  */
-ASMArgument::ASMArgument (std::string a)
+void ASMArgument::init(std::string a)
 {
-    // Strips that shit
-    std::string str = strip(a);
+    std::string str = a;
+    str_tolower(&str);
     
+    // Check if the argument is a pointer
+    // Like (hl) or (0xbeef)
+    bool is_pointer = false;
+    if (str.front() == '(' &&
+        str.back() == ')')
+    {
+        is_pointer = true;
+        str = str.substr(1, str.size() - 2);
+    }
+    
+    // Numbers
+    //
+    // Supports octal, hexadecimal, binary and decimal numbers.
+    if  (starts_with(str, "0x") ||
+         starts_with(str, "0b") ||
+         is_number(str))
+    {
+        if (starts_with(str, "0b"))
+            content.i = strtol(str.substr(2, -1).c_str(), NULL, 2);
+        else
+            content.i = strtol(str.c_str(), NULL, 0);
 
+        argtype = is_pointer ? NUM_POINTER : NUM_CONST;
+    }
+    
+    // 8-bit Registers
+    else if (str.size() == 1 && !is_pointer)
+    {
+        switch (str[0])
+        {
+            case 'a':
+                content.i = A;
+                break;
+            case 'b':
+                content.i = B;
+                break;
+            case 'c':
+                content.i = C;
+                break;
+            case 'd':
+                content.i = D;
+                break;
+            case 'e':
+                content.i = E;
+                break;
+            case 'h':
+                content.i = H;
+                break;
+            case 'l':
+                content.i = L;
+                break;
+            default:
+                content.i = R_NONE;
+        }
+        argtype = content.i == R_NONE ? A_NONE : BIT8_REG;
+    }
+
+    // 16-bit Registers
+    else if (str.size() == 2)
+    {
+        if      (str == "hl")   content.i = HL;
+        else if (str == "bc")   content.i = BC;
+        else if (str == "de")   content.i = DE;
+        else if (str == "sp")
+        {
+            content.i   = SP;
+            argtype     = SP_REG;
+            return;
+        }
+        else                    content.i = R_NONE;
+
+        argtype = content.i == R_NONE ? A_NONE : (
+                  is_pointer ? REG_POINTER : BIT16_REG);
+    }
+
+    // String
+    else if (str.front() == '"' && str.back() == '"' && !is_pointer)
+    {
+        str         = str.substr(1, str.size()-2);
+
+        argtype     = STRING;
+        content.s   = new char[str.size()+1];
+
+        strcpy(content.s, str.c_str());
+    }
+
+    else
+    {
+        argtype     = is_pointer ? DEF_POINTER : DEF_CONST;
+        content.s   = new char[str.size()+1];
+
+        strcpy(content.s, str.c_str());
+    }
 }
 
 /*
@@ -237,12 +350,48 @@ void ASMCommand::init (std::string c, size_t l)
     
     // Seperate command from arguments
     std::string rcmd    = c.substr(0, c.find_first_of(' '));
-    std::string rargs   = c.substr(c.find_first_of(' ')+1, -1);
+    std::string rargs   = strip(c.substr(c.find_first_of(' ')+1, -1));
+    if (rcmd == rargs)
+        rargs = "";
 
     // Parse command
     cmd = get_command(rcmd);
+    if (cmd == C_NONE)
+        ldie("Invalid command.", l);
 
-    // TODO: Finish implementing this function.
+    // If it's a label,
+    // Take the label name as argument
+    if (cmd == LBL)
+    {
+        args                = new ASMArgument[1];
+        args[0].raw         = rcmd;
+        args[0].argtype     = STRING;
+        arsize              = 1;
+
+        rcmd = rcmd.substr(0, rcmd.size()-1).c_str();
+        if (rcmd == "")
+            ldie("Invalid label.", l);
+
+        args[0].content.s   = new char[rcmd.size()+1];
+        strcpy(args[0].content.s, rcmd.c_str());
+    }
+    // Else do the usual init
+    else if (rargs != "")
+    {
+        size_t sz;
+        std::string *sargs  = string_split(rargs, ',', &sz);
+
+        arsize              = sz;
+        args                = new ASMArgument[sz];
+        for (size_t i = 0; i < sz; ++i)
+        {
+            args[i].init(strip(sargs[i]));
+            if (args[i].argtype == A_NONE)
+                ldie("Invalid argument", l);
+        }
+    }
+    else
+        arsize = 0;
 }
 
 /*
@@ -261,13 +410,14 @@ ASMFile::ASMFile (std::string fn)
     std::string *lines = string_split(content, '\n', &sz);
     // Progressive initialization.
     commands           = new ASMCommand[sz];
+    lsize              = 0;
 
     for (size_t i = 0; i < sz; ++i)
-    {
         if ((lines[i]=asm_strip(lines[i])) != "")
-            commands[i].init(lines[i], i+1);
-            // TODO: Fix this shit.
-    }
+        {
+            commands[lsize].init(lines[i], i+1);
+            lsize++;
+        }
 }
 
 /*
