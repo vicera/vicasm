@@ -1,3 +1,10 @@
+/*
+ *  VICasm Assembler by h34ting4ppliance
+ *
+ *  parser.h
+ *
+ *  Parser headers.
+ */
 #ifndef PARSER_H
 #define PARSER_H
 
@@ -93,7 +100,7 @@ class ASMArgument
 {
     public:
         // Init function
-        void                init(std::string a);
+        void                init(std::string);
         // Raw string
         std::string         raw;
         // Argument type
@@ -107,7 +114,10 @@ class ASMCommand
 {
     public:
         // Init function
-        void                init(std::string c, size_t l);
+        void                init(std::string, size_t);
+        // Check if the command matches a template
+        bool                match(
+                const Commands, const size_t, ...);
         // Raw string
         std::string         raw;
         // Line number
@@ -125,7 +135,7 @@ class ASMFile
 {
     public:
         // Init function
-        ASMFile             (std::string fn);
+        ASMFile             (std::string);
         // File name
         std::string         filename;
         // Number of lines
@@ -139,7 +149,7 @@ class ASMBinary
 {
     public:
         // Init function
-        ASMBinary           (std::string fn);
+        ASMBinary           (std::string);
         // File name
         std::string         filename;
         // File content

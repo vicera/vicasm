@@ -1,7 +1,16 @@
+/*
+ * VICasm Assembler by h34ting4ppliance
+ *
+ * parser.cc
+ *
+ * This file contains all the required tools to parse a whole assembly file.
+ * The rest of the program will be done in the assembler.cc file.
+ */
 #include <cstdio>
 #include <cstdlib>
 #include <cstddef>
 #include <cstring>
+#include <cstdarg>
 
 #include <iostream>
 #include <algorithm>
@@ -392,6 +401,30 @@ void ASMCommand::init (std::string c, size_t l)
     }
     else
         arsize = 0;
+}
+
+/*
+ * Commands, *Arguments -> bool
+ *
+ * Check if the command matches the following template.
+ */
+bool ASMCommand::match(
+        const Commands a_cmd, const size_t a_as, ...)
+{
+    va_list vl;
+    va_start(vl, a_as);
+    int carg;
+
+    if (a_as != arsize)
+        return false;
+    for (size_t i = 0; i < a_as; ++i)
+    {
+        carg = va_arg(vl, int);
+        if (carg != args[i].argtype)
+            return false;
+    }
+
+    return a_cmd == cmd;
 }
 
 /*
