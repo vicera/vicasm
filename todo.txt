@@ -6,10 +6,10 @@ x - Done
 / - Kinda done
 ? - Unplanned
 
- - Parser
-   - Instruction commands
-   - Assembler-wide commands
-   - Labels and definitions
+ X Parser
+   X Instruction commands
+   X Assembler-wide commands
+   X Labels and definitions
  - Assembler
    - Parsed commands to opcode
    - .db
