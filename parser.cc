@@ -18,6 +18,9 @@
 #include <string>
 
 #include "parser.h"
+#include "logging.h"
+
+static Logging lg = "parser.cc";
 
 #define IS_BLANK(x) (x == ' ' || x == '\t' || x == '\n')
 
@@ -25,14 +28,11 @@
  * Logging
  */
 
-static void error(const char* message)
-{
-    fprintf(stderr, "[xx] %s\n", message);
-}
+#define err lg.error
 
 static void die(const char* message)
 {
-    error(message);
+    err(message);
     perror(message);
 
     exit(1);
@@ -41,8 +41,8 @@ static void die(const char* message)
 static void ldie(const char* message, size_t line)
 {
     if (line > 0)
-        fprintf(stderr, "[XX] Stop at line %ld\n", line);
-    error(message);
+        lg.error("Stop at line %ld", line);
+    err(message);
     exit(1);
 }
 

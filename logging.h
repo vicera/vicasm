@@ -13,8 +13,10 @@ class Logging
     private:
         const char* filename;
     public:
-        Logging::Logging (const char* fname);
-        void log(const char* message, ...);
+        Logging (const char* fname);
+        void log(const char* msg, ...);
         void warn(const char* messasge, ...);
-        void die(const char* message, ...);
-}
+        void error(const char* msg, ...);
+};
+
+#endif

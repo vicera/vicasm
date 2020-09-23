@@ -1,4 +1,4 @@
-FILES = parser.cc assembler.cc main.cc
+FILES = parser.cc assembler.cc main.cc logging.cc
 FLAGS = -Wall -Wextra -pedantic
 EXENAME = vicasm
 CC = g++

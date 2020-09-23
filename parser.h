@@ -13,7 +13,7 @@
 
 // Type definition
 typedef uint16_t WORD;
-typedef unsigned char BYTE;
+typedef uint8_t  BYTE;
 
 // Commands
 typedef enum
