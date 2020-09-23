@@ -1,4 +1,7 @@
-# Temporary Makefile
+FILES = parser.cc assembler.cc main.cc
+FLAGS = -Wall -Wextra -pedantic
+EXENAME = vicasm
+CC = g++
 
-vicasm: parser.cc main.cc
-	g++ parser.cc main.cc -Wall -Wextra -pedantic -o vicasm
+$(EXENAME): $(FILES)
+	$(CC) $(FILES) $(FLAGS) -o $(EXENAME)
