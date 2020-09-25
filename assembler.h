@@ -10,7 +10,10 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "parser.h"
+
+
 
 // To check if the parsed command
 // matches the opcode
@@ -39,11 +42,14 @@
 #define SMOV_HLSP   MOV,    2,  BIT16_REG,      SP_REG
 
 #define SMOV_ARR    MOV,    2,  BIT8_REG,       REG_POINTER
-#define SMOV_ANN    MOV,    2,  BIT8_REG,       NUM_CONST
-#define SMOV_ADD    MOV,    2,  BIT8_REG,       DEF_CONST
+#define SMOV_ANN    MOV,    2,  BIT8_REG,       NUM_POINTER
+#define SMOV_ADD    MOV,    2,  BIT8_REG,       DEF_POINTER
 #define SMOV_RRA    MOV,    2,  REG_POINTER,    BIT8_REG
-#define SMOV_NNA    MOV,    2,  NUM_CONST,      BIT8_REG
-#define SMOV_DDA    MOV,    2,  DEF_CONST,      BIT8_REG
+#define SMOV_NNA    MOV,    2,  NUM_POINTER,    BIT8_REG
+#define SMOV_DDA    MOV,    2,  DEF_POINTER,    BIT8_REG
+
+#define SMOV_RRNN   MOV,    2,  BIT16_REG,      NUM_CONST
+#define SMOV_RRDD   MOV,    2,  BIT16_REG,      DEF_CONST
 
 // add
 #define SADD_R      ADD,    1,  BIT8_REG
@@ -124,12 +130,16 @@
 // call nn
 #define SCALL_NN    CALL,   1,  NUM_CONST
 #define SCALL_DD    CALL,   1,  DEF_CONST
+// call HL
+#define SCALL_P     CALL,   1,  BIT16_REG
 
 // ret
 #define SRET        RET,    0
 
 // dumpr/dumpm
 #define SDUMP_R     DUMP_R, 0
+#define SDUMP_M     DUMP_M, 1,  NUM_CONST
+#define SDUMP_MD    DUMP_M, 1,  DEF_CONST
 
 // slp
 #define SSLP        SLP,    0
@@ -137,6 +147,17 @@
 // swap
 #define SSWAP_R     SWAP,   1,  BIT8_REG
 #define SSWAP_RR    SWAP,   1,  BIT16_REG
+
+// .define
+#define SDEFINE     DEFINE, 2,  STRING, NUM_CONST
+// .include
+#define SINCLUDE    INCLUDE,1,  STRING
+// .bin
+#define SBIN        BIN,    1,  STRING
+// .org
+#define SORG        ORG,    1,  NUM_CONST
+// Label
+#define SLABEL      LBL,    1,  STRING
 
 //////////////////////////
 
@@ -184,10 +205,13 @@ typedef enum
     IMOV_RRA     = IMOV_ANN   + 1,
     // mov (nn), a
     IMOV_NNA     = IMOV_RRA   + 2,
+    
+    // mov rr, nn
+    IMOV_RRNN    = IMOV_NNA   + 1,
 
     // ALU
     // add r
-    IADD_R       = IMOV_NNA   + 1,
+    IADD_R       = IMOV_NNA   + 3,
     // add n
     IADD_N       = IADD_R     + 7,
     // add (hl)
@@ -271,10 +295,23 @@ typedef enum
     ISLP,
 
     // swap A, r
-    SWAP_R      = ISLP       + 1,
+    ISWAP_R      = ISLP       + 1,
     // swap HL, rr
-    SWAP_RR     = SWAP_R     + 7
+    ISWAP_RR     = ISWAP_R     + 7
 } Opcodes;
+
+// Assembler Label/Definition class
+class ASMLabel
+{
+    private:
+        std::string name;
+        WORD value;
+    public:
+        ASMLabel (std::string, WORD, bool);
+        void insert_def(std::string&, size_t);
+        // This value may be modified later.
+        bool is_word;
+};
 
 // Assembler class
 class ASMAssembler
@@ -284,7 +321,14 @@ class ASMAssembler
         void            assemble_one(const char*, std::string&);
         // Binary appending function
         void            append_binary(ASMBinary&);
-        
+        // Append label loc
+        void            append_label_loc(std::string, WORD, bool);
+
+        // Labels
+        std::map<std::string, WORD> labels;
+        // Labels location
+        std::vector<ASMLabel>   labels_loc;
+
         // Location pointer
         WORD                    locpointer;
         // Main file
@@ -297,7 +341,7 @@ class ASMAssembler
         // Add a file into the class.
         void            add_file(std::string);
         // Assemble and insert the binary into an array of characters
-        const char*     assemble();
+        std::string     assemble();
 };
 
 #endif

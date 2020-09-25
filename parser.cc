@@ -265,7 +265,7 @@ void ASMArgument::init(std::string a)
             content.i = strtol(str.substr(2, -1).c_str(), NULL, 2);
         else
             content.i = strtol(str.c_str(), NULL, 0);
-
+        
         argtype = is_pointer ? NUM_POINTER : NUM_CONST;
     }
     
