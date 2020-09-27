@@ -472,8 +472,6 @@ void ASMAssembler::assemble_one(const char* filename, std::ustring& prgm)
         
         UPDATE_LC();
         locpointer += orgptr;
-
-        // TODO: Finish this block.
     }
 }
 
@@ -488,7 +486,6 @@ std::ustring ASMAssembler::assemble()
     std::ustring result = {};
     
     assemble_one(mainfile.c_str(), result);
-    printf("Completed!\n");
     label_link(result);
 
     return result;

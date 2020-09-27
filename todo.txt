@@ -10,10 +10,13 @@ x - Done
    X Instruction commands
    X Assembler-wide commands
    X Labels and definitions
- - Assembler
-   - Parsed commands to opcode
-   - .db
-   - .org
-   - .bin
-   - .include
-   - File linking
+ X Assembler
+   X Parsed commands to opcode
+   X .db
+   X .org
+   X .bin
+   X .include
+   X File linking
+ X main.cc
+   X Command-line arguments
+   X Help
