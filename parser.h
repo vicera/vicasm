@@ -149,7 +149,7 @@ class ASMBinary
 {
     public:
         // Init function
-        ASMBinary           (std::string);
+        ASMBinary           (const char*);
         // File name
         std::string         filename;
         // File content

@@ -13,7 +13,11 @@
 #include <map>
 #include "parser.h"
 
-
+// Unsigned char string
+namespace std
+{
+    typedef std::basic_string<uint8_t> ustring;
+}
 
 // To check if the parsed command
 // matches the opcode
@@ -95,15 +99,21 @@
 // sr
 #define SSR_R       SR,     1,  BIT8_REG
 
+// cp
 // cp r
 #define SCP_R       CP,     1,  BIT8_REG
+// cp n
+#define SCP_N       CP,     1,  NUM_CONST
+#define SCP_D       CP,     1,  DEF_CONST
+// cp (hl)
+#define SCP_P       CP,     1,  REG_POINTER
 
 // jp
 // jp nn
 #define SJP_NN      JP,     1,  NUM_CONST
 #define SJP_DD      JP,     1,  DEF_CONST
 // jp HL
-#define SJP_P       JP,     1,  BIT18_REG
+#define SJP_P       JP,     1,  BIT16_REG
 
 // jc
 // jc nn
@@ -149,7 +159,7 @@
 #define SSWAP_RR    SWAP,   1,  BIT16_REG
 
 // .define
-#define SDEFINE     DEFINE, 2,  STRING, NUM_CONST
+#define SDEFINE     DEFINE, 2,  DEF_CONST, NUM_CONST
 // .include
 #define SINCLUDE    INCLUDE,1,  STRING
 // .bin
@@ -211,7 +221,7 @@ typedef enum
 
     // ALU
     // add r
-    IADD_R       = IMOV_NNA   + 3,
+    IADD_R       = IMOV_RRNN   + 3,
     // add n
     IADD_N       = IADD_R     + 7,
     // add (hl)
@@ -260,12 +270,14 @@ typedef enum
     // sr r
     ISR_R        = ISL_R      + 7,
 
-    // cp r
+    // cp
     ICP_R        = ISR_R      + 7,
+    ICP_N        = ICP_R      + 7,
+    ICP_P        = ICP_N      + 1,
 
     // Jumps
     // jp nn/(hl)
-    IJP_NN       = ICP_R      + 7,
+    IJP_NN       = ICP_P      + 1,
     IJP_P        = IJP_NN     + 1,
 
     // jc nn/(hl)
@@ -303,10 +315,10 @@ typedef enum
 // Assembler Label/Definition class
 class ASMLabel
 {
-    private:
+    public:
         std::string name;
         WORD value;
-    public:
+        
         ASMLabel (std::string, WORD, bool);
         void insert_def(std::string&, size_t);
         // This value may be modified later.
@@ -318,11 +330,11 @@ class ASMAssembler
 {
     private:
         // Actual assemble function
-        void            assemble_one(const char*, std::string&);
-        // Binary appending function
-        void            append_binary(ASMBinary&);
+        void            assemble_one(const char*, std::ustring&);
         // Append label loc
         void            append_label_loc(std::string, WORD, bool);
+        // Links labels
+        void            label_link(std::ustring& prgm);
 
         // Labels
         std::map<std::string, WORD> labels;
@@ -331,6 +343,8 @@ class ASMAssembler
 
         // Location pointer
         WORD                    locpointer;
+        // ORG
+        signed int              orgptr = 0;
         // Main file
         std::string             mainfile;
         // Files
@@ -341,7 +355,7 @@ class ASMAssembler
         // Add a file into the class.
         void            add_file(std::string);
         // Assemble and insert the binary into an array of characters
-        std::string     assemble();
+        std::ustring     assemble();
 };
 
 #endif

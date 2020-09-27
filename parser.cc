@@ -333,9 +333,9 @@ void ASMArgument::init(std::string a)
     else
     {
         argtype     = is_pointer ? DEF_POINTER : DEF_CONST;
-        content.s   = new char[str.size()+1];
+        content.s   = new char[a.size()+1];
 
-        strcpy(content.s, str.c_str());
+        strcpy(content.s, a.c_str());
     }
 }
 
@@ -459,7 +459,7 @@ ASMFile::ASMFile (std::string fn)
  *
  * Will copy a Binary file into a string.
  */
-ASMBinary::ASMBinary (const std::string fn)
+ASMBinary::ASMBinary (const char* fn)
 {
     filename    = fn;
     content     = read_into_file(fn);

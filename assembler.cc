@@ -86,18 +86,6 @@ ASMAssembler::ASMAssembler (std::string mf, WORD sl = 0)
     locpointer = sl;
 }
 
-/*
- * ASMAssemble bin appending function
- *
- * ASMBinary -> void
- *
- * Appends binary into the assembly file.
- */
-void ASMAssembler::append_binary(ASMBinary& bin)
-{
-    
-}
-
 /* 
  * LABEL Functions
  * 
@@ -117,10 +105,33 @@ void ASMAssembler::append_label_loc(std::string name, WORD location, bool size)
 
 // H - 0xXX00 - false
 // L = 0x00XX - true
-inline char sepchars(WORD in, bool hl)
+inline BYTE sepchars(WORD in, bool hl)
 {
     return hl ? in % 0x100 : in / 0x100;
 }
+
+/*
+ * ASMAssembler definition linking
+ *
+ * std::ustring& -> void
+ */
+void ASMAssembler::label_link(std::ustring& prgm)
+{
+    for (std::vector<ASMLabel>::iterator it = labels_loc.begin();
+            it != labels_loc.end(); ++it)
+    {
+        if (labels.find(it->name) == labels.end())
+        {
+            lg.error("%s is not a valid label.", it->name.c_str());
+            exit(1);
+        }
+
+        prgm[(it->value)+(it->is_word)] = labels[it->name] % 0x100;
+        if (it->is_word)
+            prgm[it->value] = labels[it->name] / 0x100;
+    }
+}
+
 /*
  * ASMAssembler actual assemble function
  *
@@ -129,13 +140,13 @@ inline char sepchars(WORD in, bool hl)
  * Assemble a file. A different function has been implemented to
  * recursively assemble files (for .include and .bin)
  */
-void ASMAssembler::assemble_one(const char* filename, std::string& prgm)
+void ASMAssembler::assemble_one(const char* filename, std::ustring& prgm)
 {
     #define MATCH       curcmd->match
     #define ARG(x)      curcmd->args[x]
-    #define APP8(x)     (char)(sepchars(ARG(x).content.i, true))
-    #define APP16(x)    (char)(sepchars(ARG(x).content.i, false)), \
-                        (char)(sepchars(ARG(x).content.i, true))
+    #define APP8(x)     (sepchars(ARG(x).content.i, true))
+    #define APP16(x)    (sepchars(ARG(x).content.i, false)), \
+                        (sepchars(ARG(x).content.i, true))
     #define GREG8(x)    (ARG(x).content.i - A)
     #define GREG16(x)   (ARG(x).content.i - HL)
     #define GSTR(x)     ARG(x).content.s
@@ -239,7 +250,7 @@ void ASMAssembler::assemble_one(const char* filename, std::string& prgm)
         else if (MATCH(SMOV_RRDD))
         {
             prgm += IMOV_RRNN + GREG16(0);
-            ALBLOC(GSTR(0), true);
+            ALBLOC(GSTR(1), true);
         }
 
         // add
@@ -325,6 +336,19 @@ void ASMAssembler::assemble_one(const char* filename, std::string& prgm)
         else if (MATCH(SSR_R))
             prgm += ISR_R + GREG8(0);
 
+        // cp
+        else if (MATCH(SCP_R))
+            prgm += ICP_R + GREG8(0);
+        else if (MATCH(SCP_N))
+            prgm += {ICP_N, APP8(0)};
+        else if (MATCH(SCP_D))
+        {
+            prgm += ICP_N;
+            ALBLOC(GSTR(0), false);
+        }
+        else if (MATCH(SCP_P) && IS_HL(0))
+            prgm += ICP_P;
+
         // jp
         else if (MATCH(SJP_NN))
             prgm += {IJP_NN, APP16(0)};
@@ -333,7 +357,7 @@ void ASMAssembler::assemble_one(const char* filename, std::string& prgm)
             prgm += IJP_NN;
             ALBLOC(GSTR(0), true);
         }
-        else if (MATCH(SJP_P) && IS_HL(0))
+        else if (MATCH(SJP_P /* jpp */) && IS_HL(0))
             prgm += IJP_P;
 
         // jc
@@ -411,22 +435,45 @@ void ASMAssembler::assemble_one(const char* filename, std::string& prgm)
         /////////////////////////////
         
         else if (MATCH(SDEFINE))
-            labels[GSTR(0)] = APP16(0);
+            labels[GSTR(0)] = ARG(1).content.i;
         else if (MATCH(SINCLUDE))
             assemble_one(GSTR(0), prgm);
         else if (MATCH(SBIN))
-            ;
+        {
+            ASMBinary bin = GSTR(0);
+            for (std::string::iterator it = bin.content.begin();
+                    it != bin.content.end(); ++it)
+                prgm += (BYTE)(*it);
+        }
         else if (MATCH(SORG))
-            ;
+        {
+            UPDATE_LC();
+            orgptr = ARG(0).content.i - locpointer;
+        }
         else if (MATCH(SLABEL))
             labels[GSTR(0)] = (WORD)locpointer;
+        else if (curcmd->cmd == DB)
+            for (size_t i = 0; i < curcmd->arsize; ++i)
+                switch (ARG(i).argtype)
+                {
+                    case NUM_CONST:
+                        if (ARG(i).content.i < 0x100)
+                            prgm += APP8(i);
+                        else
+                            prgm += {APP16(i)};
+                        break;
+                    default:
+                        ldie("Invalid arguments.", curcmd->linenum);
+                        break;
+                }
 
         else
             ldie("Invalid arguments", curcmd->linenum);
         
         UPDATE_LC();
+        locpointer += orgptr;
+
         // TODO: Finish this block.
-        // TODO: Fix the unsigned char issue.
     }
 }
 
@@ -436,10 +483,13 @@ void ASMAssembler::assemble_one(const char* filename, std::string& prgm)
  *
  * Assemble the program
  */
-std::string ASMAssembler::assemble()
+std::ustring ASMAssembler::assemble()
 {
-    std::string result = "";
+    std::ustring result = {};
     
     assemble_one(mainfile.c_str(), result);
+    printf("Completed!\n");
+    label_link(result);
+
     return result;
 }
