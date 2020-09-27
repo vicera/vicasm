@@ -1,5 +1,7 @@
-<center><h1>VICasm</h1></center>
-<center><i>Assembler for the VICERA CPU</i></center>
+<h1 align="center">VICasm</h1>
+<p align="center"><i>Assembler for the VICERA CPU</i></p>
+
+<p></p>
 
 VICasm is an assembler designed for the VICERA CPU. It has basic assembler
 features such as labels, constant definition, `org` and multiple files support
