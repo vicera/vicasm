@@ -241,18 +241,19 @@ Commands get_command(std::string a_str)
  */
 void ASMArgument::init(std::string a)
 {
-    std::string str = a;
-    str_tolower(&str);
     
     // Check if the argument is a pointer
     // Like (hl) or (0xbeef)
     bool is_pointer = false;
-    if (str.front() == '(' &&
-        str.back() == ')')
+    if (a.front() == '(' &&
+        a.back() == ')')
     {
         is_pointer = true;
-        str = str.substr(1, str.size() - 2);
+        a = a.substr(1, a.size() - 2);
+
     }
+    std::string str = a;
+    str_tolower(&str);
     
     // Numbers
     //

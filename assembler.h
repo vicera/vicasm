@@ -156,6 +156,7 @@ namespace std
 
 // swap
 #define SSWAP_R     SWAP,   1,  BIT8_REG
+#define SSWAP_P     SWAP,   1,  REG_POINTER
 #define SSWAP_RR    SWAP,   1,  BIT16_REG
 
 // .define
@@ -308,8 +309,10 @@ typedef enum
 
     // swap A, r
     ISWAP_R      = ISLP       + 1,
+    // swap (hl)
+    ISWAP_P      = ISWAP_R     + 7,
     // swap HL, rr
-    ISWAP_RR     = ISWAP_R     + 7
+    ISWAP_RR     = ISWAP_P     + 1
 } Opcodes;
 
 // Assembler Label/Definition class

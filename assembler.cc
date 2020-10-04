@@ -427,6 +427,8 @@ void ASMAssembler::assemble_one(const char* filename, std::ustring& prgm)
         // swap
         else if (MATCH(SSWAP_R))
             prgm += ISWAP_R + GREG8(0);
+        else if (MATCH(SSWAP_P) && IS_HL(0))
+            prgm += ISWAP_P;
         else if (MATCH(SSWAP_RR))
             prgm += ISWAP_RR + GREG16(0);
 
