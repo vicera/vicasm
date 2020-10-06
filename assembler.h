@@ -55,17 +55,25 @@ namespace std
 #define SMOV_RRNN   MOV,    2,  BIT16_REG,      NUM_CONST
 #define SMOV_RRDD   MOV,    2,  BIT16_REG,      DEF_CONST
 
-// add
-#define SADD_R      ADD,    1,  BIT8_REG
-#define SADD_N      ADD,    1,  NUM_CONST
-#define SADD_D      ADD,    1,  DEF_CONST
-#define SADD_P      ADD,    1,  REG_POINTER
+// add a, *
+#define SADD_R      ADD,    2,  BIT8_REG,       BIT8_REG
+#define SADD_N      ADD,    2,  BIT8_REG,       NUM_CONST
+#define SADD_D      ADD,    2,  BIT8_REG,       DEF_CONST
+#define SADD_P      ADD,    2,  BIT8_REG,       REG_POINTER
+// add hl, *
+#define SADD_RR     ADD,    2,  BIT16_REG,      BIT16_REG
+#define SADD_NN     ADD,    2,  BIT16_REG,      NUM_CONST
+#define SADD_DD     ADD,    2,  BIT16_REG,      DEF_CONST
 
 // sub
-#define SSUB_R      SUB,    1,  BIT8_REG
-#define SSUB_N      SUB,    1,  NUM_CONST
-#define SSUB_D      SUB,    1,  DEF_CONST
-#define SSUB_P      SUB,    1,  REG_POINTER
+#define SSUB_R      SUB,    2,  BIT8_REG,       BIT8_REG
+#define SSUB_N      SUB,    2,  BIT8_REG,       NUM_CONST
+#define SSUB_D      SUB,    2,  BIT8_REG,       DEF_CONST
+#define SSUB_P      SUB,    2,  BIT8_REG,       REG_POINTER
+// sub hl, *
+#define SSUB_RR     SUB,    2,  BIT16_REG,      BIT16_REG
+#define SSUB_NN     SUB,    2,  BIT16_REG,      NUM_CONST
+#define SSUB_DD     SUB,    2,  BIT16_REG,      DEF_CONST
 
 // and
 #define SAND_R      AND,    1,  BIT8_REG
@@ -221,22 +229,30 @@ typedef enum
     IMOV_RRNN    = IMOV_NNA   + 1,
 
     // ALU
-    // add r
+    // add A, r
     IADD_R       = IMOV_RRNN   + 3,
-    // add n
+    // add A, n
     IADD_N       = IADD_R     + 7,
-    // add (hl)
+    // add A, (hl)
     IADD_P       = IADD_N     + 1,
+    // add HL, rr
+    IADD_RR      = IADD_P     + 1,
+    // add HL, nn
+    IADD_NN      = IADD_RR    + 3,
     
-    // sub r
-    ISUB_R       = IADD_P     + 1,
-    // sub n
+    // sub A, r
+    ISUB_R       = IADD_NN    + 1,
+    // sub A, n
     ISUB_N       = ISUB_R     + 7,
-    // sub (hl)
+    // sub A, (hl)
     ISUB_P       = ISUB_N     + 1,
+    // sub HL, rr
+    ISUB_RR      = ISUB_P     + 1,
+    // sub HL, nn
+    ISUB_NN      = ISUB_RR    + 3,
 
     // and r
-    IAND_R       = ISUB_P     + 1,
+    IAND_R       = ISUB_NN    + 1,
     // and n
     IAND_N       = IAND_R     + 7,
     // and (hl)

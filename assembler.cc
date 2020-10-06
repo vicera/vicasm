@@ -253,31 +253,51 @@ void ASMAssembler::assemble_one(const char* filename, std::ustring& prgm)
             ALBLOC(GSTR(1), true);
         }
 
-        // add
-        else if (MATCH(SADD_R))
-            prgm += IADD_R + GREG8(0);
-        else if (MATCH(SADD_N))
-            prgm += {IADD_N, APP8(0)};
-        else if (MATCH(SADD_D))
+        // add A, *
+        else if (MATCH(SADD_R) && IS_A(0))
+            prgm += IADD_R + GREG8(1);
+        else if (MATCH(SADD_N) && IS_A(0))
+            prgm += {IADD_N, APP8(1)};
+        else if (MATCH(SADD_D) && IS_A(0))
         {
             prgm += IADD_N;
-            ALBLOC(GSTR(0), false);
+            ALBLOC(GSTR(1), false);
         }
-        else if (MATCH(SADD_P) && IS_HL(0))
+        else if (MATCH(SADD_P) && IS_A(0) && IS_HL(1))
             prgm += IADD_P;
+        // add HL, *
+        else if (MATCH(SADD_RR) && IS_HL(0))
+            prgm += IADD_RR + GREG16(1);
+        else if (MATCH(SADD_NN) && IS_HL(0))
+            prgm += {IADD_NN, APP16(1)};
+        else if (MATCH(SADD_DD) && IS_HL(0))
+        {
+            prgm += IADD_NN;
+            ALBLOC(GSTR(1), true);
+        }
 
-        // sub
-        else if (MATCH(SSUB_R))
-            prgm += ISUB_R + GREG8(0);
-        else if (MATCH(SSUB_N))
-            prgm += {ISUB_N, APP8(0)};
-        else if (MATCH(SSUB_D))
+        // sub A, *
+        else if (MATCH(SSUB_R) && IS_A(0))
+            prgm += ISUB_R + GREG8(1);
+        else if (MATCH(SSUB_N) && IS_A(0))
+            prgm += {ISUB_N, APP8(1)};
+        else if (MATCH(SSUB_D) && IS_A(0))
         {
             prgm += ISUB_N;
-            ALBLOC(GSTR(0), false);
+            ALBLOC(GSTR(1), false);
         }
-        else if (MATCH(SSUB_P) && IS_HL(0))
+        else if (MATCH(SSUB_P) && IS_A(0) && IS_HL(1))
             prgm += ISUB_P;
+        // sub HL, *
+        else if (MATCH(SSUB_RR) && IS_HL(0))
+            prgm += ISUB_RR + GREG16(1);
+        else if (MATCH(SSUB_NN) && IS_HL(0))
+            prgm += {ISUB_RR, APP16(1)};
+        else if (MATCH(SSUB_DD) && IS_HL(0))
+        {
+            prgm += ISUB_NN;
+            ALBLOC(GSTR(1), true);
+        }
 
         // and
         else if (MATCH(SAND_R))
