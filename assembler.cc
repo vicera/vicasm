@@ -63,6 +63,7 @@ void ASMLabel::insert_def(std::string& a_str, size_t where)
  */
 void ASMAssembler::add_file(std::string fn)
 {
+    fprintf(stderr, "Adding %s...\n", fn.c_str());
     ASMFile f = fn;
     files.push_back(f);
 }
@@ -451,6 +452,10 @@ void ASMAssembler::assemble_one(const char* filename, std::ustring& prgm)
             prgm += ISWAP_P;
         else if (MATCH(SSWAP_RR))
             prgm += ISWAP_RR + GREG16(0);
+
+        // dbg
+        else if (MATCH(SDBG))
+            prgm += IDBG;
 
         /////////////////////////////
         // Assembler-wide commands //

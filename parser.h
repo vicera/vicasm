@@ -43,7 +43,9 @@ typedef enum
     BIN,
     ORG,
     DB,
-    LBL
+    LBL,
+
+    DBG
 } Commands;
 
 typedef enum

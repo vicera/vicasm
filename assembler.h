@@ -177,6 +177,8 @@ namespace std
 #define SORG        ORG,    1,  NUM_CONST
 // Label
 #define SLABEL      LBL,    1,  STRING
+// DBG
+#define SDBG        DBG,    0
 
 //////////////////////////
 
@@ -328,7 +330,10 @@ typedef enum
     // swap (hl)
     ISWAP_P      = ISWAP_R     + 7,
     // swap HL, rr
-    ISWAP_RR     = ISWAP_P     + 1
+    ISWAP_RR     = ISWAP_P     + 1,
+
+    // dbg
+    IDBG         = ISWAP_RR    + 3
 } Opcodes;
 
 // Assembler Label/Definition class

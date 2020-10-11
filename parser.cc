@@ -211,7 +211,8 @@ Commands get_command(std::string a_str)
     else if (str == ".org")     return ORG;
     else if (str == ".db")      return DB;
     else if (str.back() == ':') return LBL;
-
+    
+    else if (str == "dbg")      return DBG;
     // None.
     else
         return C_NONE;
