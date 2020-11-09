@@ -23,7 +23,7 @@ $ ./vicasm
 
 ## Documentation
 
-[VICERA Documentation (Deprecated, refer to the note below)](https://h3liu.ml/vicera)
+[VICasm Documentation](https://h3liu.ml/vicera/docs)
 
 ## Contribution
 
