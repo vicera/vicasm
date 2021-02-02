@@ -3,6 +3,10 @@
 
 <p></p>
 
+# THE VICERA HAS MOVED TO [CODEBERG](https://codeberg.org/vicera). NO MORE UPDATE HERE.
+# THE VICERA HAS MOVED TO [CODEBERG](https://codeberg.org/vicera). NO MORE UPDATE HERE.
+# THE VICERA HAS MOVED TO [CODEBERG](https://codeberg.org/vicera). NO MORE UPDATE HERE.
+
 VICasm is an assembler designed for the VICERA CPU. It has basic assembler
 features such as labels, constant definition, `org` and multiple files support
 such as other assembly files or binary files.
